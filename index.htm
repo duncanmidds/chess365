@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  <script src="js/chessboard-1.0.0.min.js"></script>
+  <script src="http://www.willangles.com/projects/chessboard/js/chess.js"></script>
+</head>
+<body>
+  <h1>Chess Puzzle</h1>
+  <div id="board" style="width: 400px"></div>
+  <p id="instructions">Instructions: Find the best move for White.</p>
+  <button id="revealButton" onclick="revealPuzzle()">Reveal Puzzle Moves</button>
+  <p id="puzzleMoves" style="display: none;"></p>
+  <button id="makeBlackMoveButton" onclick="makeBlackMove()" style="display: none;">Make Black Move</button>
+  <p id="puzzleUrl"><a href="https://lichess.org/l6AejDMO#105" target="_blank">View Puzzle on Lichess</a></p>
+
+  <script>
+  var puzzleFEN = '4r3/5pk1/1p3np1/3p3p/2qQ4/P4N1P/1P3RP1/7K w - - 6 34';
+  var puzzleMoves = ['d4b6', 'f6e4', 'h1g1', 'e4f2'];
+  var whiteMoveIndex = 0;
+  var showSolution = false;
+  var board;
+
+
+var puzzles = ['r6k/pp2r2p/4Rp1Q/3p4/8/1N1P2R1/PqP2bPP/7K b - - 0 24',
+'5rk1/1p3ppp/pq3b2/8/8/1P1Q1N2/P4PPP/3R2K1 w - - 2 27',
+
+
+
+
+
+
+
+']
+
+
+
+
+  
+
+  function revealPuzzle() {
+    var puzzleMovesElement = document.getElementById('puzzleMoves');
+    puzzleMovesElement.innerHTML = 'Puzzle Moves: ' + puzzleMoves.join(' ');
+    puzzleMovesElement.style.display = 'block';
+
+    var revealButton = document.getElementById('revealButton');
+    revealButton.style.display = 'none';
+
+    var makeBlackMoveButton = document.getElementById('makeBlackMoveButton');
+    makeBlackMoveButton.style.display = 'block';
+
+    // Allow user to play the first White move
+    board.setOptions({ draggable: true });
+  }
+
+  function makeBlackMove() {
+    if (whiteMoveIndex >= puzzleMoves.length) {
+      document.getElementById('puzzleMoves').innerHTML = 'Puzzle Solved!';
+      var makeBlackMoveButton = document.getElementById('makeBlackMoveButton');
+      makeBlackMoveButton.style.display = 'none';
+      return;
+    }
+
+    var move = puzzleMoves[whiteMoveIndex];
+    var moveFrom = move.slice(0, 2);
+    var moveTo = move.slice(2, 4);
+
+    board.move(moveFrom + '-' + moveTo);
+    whiteMoveIndex++;
+
+    // Wait for 1 second before allowing the user to make the next move
+    setTimeout(function() {
+      board.setOptions({ draggable: true });
+    }, 1000);
+  }
+
+  function checkPuzzleMove(source, target) {
+    var correctMove = puzzleMoves[whiteMoveIndex];
+    var moveFrom = correctMove.slice(0, 2);
+    var moveTo = correctMove.slice(2, 4);
+
+    return source === moveFrom && target === moveTo;
+  }
+
+  function onDrop(source, target, piece) {
+    if (!checkPuzzleMove(source, target)) {
+      return 'snapback'; // Snap back the piece if the move is incorrect
+    }
+
+    whiteMoveIndex++;
+    var puzzleMovesElement = document.getElementById('puzzleMoves');
+    if (whiteMoveIndex >= puzzleMoves.length) {
+      puzzleMovesElement.innerHTML = 'Puzzle Solved!';
+      var makeBlackMoveButton = document.getElementById('makeBlackMoveButton');
+      makeBlackMoveButton.style.display = 'none';
+    } else {
+      puzzleMovesElement.innerHTML = 'Puzzle Moves: ' + puzzleMoves.slice(whiteMoveIndex).join(' ');
+    }
+
+    if (whiteMoveIndex === 1) {
+      // Show the "Make Black Move" button after the first White move
+      var makeBlackMoveButton = document.getElementById('makeBlackMoveButton');
+      makeBlackMoveButton.style.display = 'block';
+    }
+
+    // Prevent further moves after puzzle is solved
+    if (whiteMoveIndex >= puzzleMoves.length) {
+      board.setOptions({ draggable: false });
+    }
+  }
+
+  // Display puzzle moves and set up the chessboard after the page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    var instructions = document.getElementById('instructions');
+    instructions.innerHTML = 'Instructions: Move pieces to find the best move for White.';
+
+    var revealButton = document.getElementById('revealButton');
+    revealButton.style.display = 'block';
+
+    var puzzleMovesElement = document.getElementById('puzzleMoves');
+    puzzleMovesElement.innerHTML = 'Puzzle Moves: ' + puzzleMoves.join(' ');
+
+    var makeBlackMoveButton = document.getElementById('makeBlackMoveButton');
+    makeBlackMoveButton.style.display = 'block';
+
+    board = Chessboard('board', {
+      draggable: true, // Set to true to allow the user to move the pieces
+      position: puzzleFEN,
+      onDrop: onDrop
+    });
+  });
+</script>
+
+</body>
+</html>
